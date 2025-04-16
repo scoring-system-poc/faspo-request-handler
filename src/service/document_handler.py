@@ -36,11 +36,12 @@ async def get_document(subject_id: str, document_id: str) -> Document:
             item=document_id,
             partition_key=subject_id,
         )
-    except azure.cosmos.exceptions.CosmosHttpResponseError:
+    except azure.cosmos.exceptions.CosmosHttpResponseError as e:
         raise HTTPException(
-            status_code=404,
+            status_code=e.status_code,
             logger_name=__name__,
-            logger_lvl=logging.INFO
+            logger_lvl=logging.INFO,
+            logger_msg=str(e.reason),
         )
 
 

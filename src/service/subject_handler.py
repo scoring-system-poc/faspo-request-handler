@@ -42,11 +42,12 @@ async def get_subject(subject_id: str) -> Subject:
             item=subject_id,
             partition_key=subject_id,
         )
-    except azure.cosmos.exceptions.CosmosHttpResponseError:
+    except azure.cosmos.exceptions.CosmosHttpResponseError as e:
         raise HTTPException(
-            status_code=404,
+            status_code=e.status_code,
             logger_name=__name__,
-            logger_lvl=logging.INFO
+            logger_lvl=logging.INFO,
+            logger_msg=str(e.reason),
         )
 
 
@@ -74,22 +75,22 @@ async def update_subject(
                 item=subject_id,
                 partition_key=subject_id,
                 patch_operations=[
-                    {"op": "set", "path": "/name", "value": name} if name else {},
-                    {"op": "set", "path": "/address/region", "value": address.region} if address else {},
-                    {"op": "set", "path": "/address/street", "value": address.street} if address else {},
-                    {"op": "set", "path": "/address/zip", "value": address.zip} if address else {},
-                    {"op": "set", "path": "/currency", "value": currency} if currency else {},
-                    {"op": "set", "path": "/active", "value": active} if active else {},
-                    {"op": "set", "path": "/extra", "value": extra} if extra else {},
-
+                    *([{"op": "set", "path": "/name", "value": name}] if name else []),
+                    *([{"op": "set", "path": "/address/region", "value": address.region}] if address else []),
+                    *([{"op": "set", "path": "/address/street", "value": address.street}] if address else []),
+                    *([{"op": "set", "path": "/address/zip", "value": address.zip}] if address else []),
+                    *([{"op": "set", "path": "/currency", "value": currency}] if currency else []),
+                    *([{"op": "set", "path": "/active", "value": active}] if active else []),
+                    *([{"op": "set", "path": "/extra", "value": extra}] if extra else []),
                 ],
             )
         )
-    except azure.cosmos.exceptions.CosmosHttpResponseError:
+    except azure.cosmos.exceptions.CosmosHttpResponseError as e:
         raise HTTPException(
-            status_code=404,
+            status_code=e.status_code,
             logger_name=__name__,
-            logger_lvl=logging.INFO
+            logger_lvl=logging.INFO,
+            logger_msg=str(e.reason),
         )
 
 
@@ -105,12 +106,12 @@ async def create_subject(subject: Subject) -> Subject:
                 body=subject.model_dump(mode="json", by_alias=True),
             )
         )
-    except azure.cosmos.exceptions.CosmosHttpResponseError:
+    except azure.cosmos.exceptions.CosmosHttpResponseError as e:
         raise HTTPException(
-            status_code=400,
-            detail=f"Subject with ID {subject.id} already exists",
+            status_code=e.status_code,
             logger_name=__name__,
             logger_lvl=logging.INFO,
+            logger_msg=str(e.reason),
         )
 
 
@@ -125,11 +126,12 @@ async def delete_subject(subject_id: str) -> None:
             item=subject_id,
             partition_key=subject_id,
         )
-    except azure.cosmos.exceptions.CosmosHttpResponseError:
+    except azure.cosmos.exceptions.CosmosHttpResponseError as e:
         raise HTTPException(
-            status_code=404,
+            status_code=e.status_code,
             logger_name=__name__,
             logger_lvl=logging.INFO,
+            logger_msg=str(e.reason),
         )
 
 
