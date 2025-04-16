@@ -41,7 +41,9 @@ async def test_get_document(mock_cosmos, mock_docs):
 async def test_get_document__not_found(mock_cosmos):
     from src.service.document_handler import get_document
 
-    mock_cosmos.get_container_client().read_item.side_effect = azure.cosmos.exceptions.CosmosHttpResponseError
+    mock_cosmos.get_container_client().read_item.side_effect = azure.cosmos.exceptions.CosmosHttpResponseError(
+        status_code=404,
+    )
     with pytest.raises(HTTPException):
         await get_document(subject_id="x", document_id="y")
 
