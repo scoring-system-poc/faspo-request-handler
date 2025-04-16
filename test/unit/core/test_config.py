@@ -15,6 +15,5 @@ async def test_config(mock_environ) -> None:
     assert CONFIG.ONLINE_DATA_SERVICE_URL == "http://faspo-online-data-service/api/v1"
     assert CONFIG.MODEL_SERVICE_URL == "http://faspo-model-service/api/v1"
     assert CONFIG.EXPORT_SERVICE_URL == "http://faspo-export-service/api/v1"
-    assert CONFIG.STORE_SERVICE_URL == "http://faspo-store-service/api/v1"
     assert CONFIG.LOG_LEVEL == "INFO"
 

@@ -22,7 +22,6 @@ class Config(pydantic_settings.BaseSettings):
     ONLINE_DATA_SERVICE_URL: str = "http://faspo-online-data-service/api/v1"
     MODEL_SERVICE_URL: str = "http://faspo-model-service/api/v1"
     EXPORT_SERVICE_URL: str = "http://faspo-export-service/api/v1"
-    STORE_SERVICE_URL: str = "http://faspo-store-service/api/v1"    # this is only temporary (for subject creation)
 
     # General
     LOG_LEVEL: pydantic.constr(to_upper=True) = "INFO"
