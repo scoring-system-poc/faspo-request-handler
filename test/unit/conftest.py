@@ -41,7 +41,6 @@ def mock_environ(monkeypatch) -> None:
             "ONLINE_DATA_SERVICE_URL": "http://faspo-online-data-service/api/v1",
             "MODEL_SERVICE_URL": "http://faspo-model-service/api/v1",
             "EXPORT_SERVICE_URL": "http://faspo-export-service/api/v1",
-            "STORE_SERVICE_URL": "http://faspo-store-service/api/v1",
         }
         for key, value in env.items():
             monkeypatch.setenv(key, value)

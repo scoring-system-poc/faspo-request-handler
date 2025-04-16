@@ -19,12 +19,12 @@ async def search_subject(ic: str = None, name: str = None, include_not_active: b
         async for doc
         in cosmos.c_subject.query_items(
             query=f"SELECT * FROM c "
-                  f"WHERE RegexMatch(c.ic, @ic, 'i')"
+                  f"WHERE RegexMatch(c.id, @ic, 'i')"
                   f"AND RegexMatch(c.name, @name, 'i')"
                   f"{'AND c.active = true' if not include_not_active else ''}",
             parameters=[
-                {"name": "@ic", "value": ic},
-                {"name": "@name", "value": name},
+                {"name": "@ic", "value": ic or ".*"},
+                {"name": "@name", "value": name or ".*"},
             ],
             continuation_token_limit=1,
         )
@@ -108,7 +108,7 @@ async def create_subject(subject: Subject) -> Subject:
     except azure.cosmos.exceptions.CosmosHttpResponseError:
         raise HTTPException(
             status_code=400,
-            detail=f"Subject with ID {subject.subject_id} already exists",
+            detail=f"Subject with ID {subject.id} already exists",
             logger_name=__name__,
             logger_lvl=logging.INFO,
         )
@@ -125,7 +125,7 @@ async def delete_subject(subject_id: str) -> None:
             item=subject_id,
             partition_key=subject_id,
         )
-    except (azure.cosmos.exceptions.CosmosHttpResponseError, azure.cosmos.exceptions.CosmosResourceNotFoundError):
+    except azure.cosmos.exceptions.CosmosHttpResponseError:
         raise HTTPException(
             status_code=404,
             logger_name=__name__,
