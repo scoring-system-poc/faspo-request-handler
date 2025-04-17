@@ -120,7 +120,7 @@ async def refresh_documents(
     Trigger document refresh for a subject (i.e. online-data fetch).
     :param subject_id: ID of the subject
     :param correlation_id: Correlation ID for tracing
-    :return: Status of the document refresh
+    :return: Status of the document refresh for each doc_type or raise HTTPException if all doc_types already exist
     """
     return await document_handler.refresh_documents(
         subject_id=subject_id,

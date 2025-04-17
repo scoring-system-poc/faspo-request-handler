@@ -140,25 +140,46 @@ async def refresh_documents(
     :param doc_type: Type of the document (optional - if not provided all types from L1 are fetched)
     :param period: Period of the document (optional - if not provided latest period is used)
     :param correlation_id: Correlation ID for tracing (optional)
-    :return: Dictionary with document types and their statuses
+    :return: Dictionary with document types and their statuses or raise HTTPException if no documents to refresh
     """
     doc_types = [doc_type] if doc_type else ["001", "002", "003", "080"]
-    results = {}
 
     for doc_type in doc_types:
-        try:
-            results[doc_type] = {
-                "status": 200,
-                "detail": await http_handler.post_data(
-                    url=f"{CONFIG.ONLINE_DATA_SERVICE_URL}/mfcr/{doc_type}?subject_id={subject_id}&period={period}",
-                    data={},
-                    correlation_id=correlation_id,
-                )
-            }
-        except HTTPException as e:
-            results[doc_type] = {
-                "status": e.status_code,
-                "detail": e.detail,
-            }
+        docs = [
+            doc async for doc
+            in cosmos.c_document.query_items(
+                query="SELECT * FROM c WHERE c._type = 'doc' AND c.type.key = @doc_type AND c.period = @period",
+                parameters=[{"name": "@doc_type", "value": doc_type}, {"name": "@period", "value": period}],
+                partition_key=subject_id,
+            )
+        ]
+
+        if len(docs):
+            doc_types.remove(doc_type)
+
+    refresh_tasks = [
+        http_handler.post_data(
+            url=f"{CONFIG.ONLINE_DATA_SERVICE_URL}/mfcr/{doc_type}?subject_id={subject_id}&period={period}",
+            data={},
+            correlation_id=correlation_id,
+        )
+        for doc_type in doc_types
+    ]
+
+    results = {
+        doc_type: {
+            "status": 200 if not isinstance(response, HTTPException) else response.status_code,
+            "detail": response if not isinstance(response, HTTPException) else response.detail,
+        }
+        for response, doc_type in zip(await asyncio.gather(*refresh_tasks, return_exceptions=True), doc_types)
+    }
+
+    if not results:
+        raise HTTPException(
+            status_code=409,
+            logger_name=__name__,
+            logger_lvl=logging.INFO,
+            logger_msg="No documents to refresh",
+        )
 
     return results

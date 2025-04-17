@@ -162,7 +162,13 @@ async def test_patch_document__scoring_error(
 
 @pytest.mark.asyncio
 async def test_refresh_documents(async_client: httpx.AsyncClient, mock_document_service) -> None:
-    mock_document_service.refresh_documents = unittest.mock.AsyncMock(return_value={"status": "OK"})
+    mock_document_service.refresh_documents = unittest.mock.AsyncMock(
+        return_value={
+            "001": {
+                "status": 200, "detail": "OK"
+            }
+        }
+    )
 
     response = await async_client.post(
         "/api/v1/subject/subject-id/document/refresh",
@@ -171,7 +177,7 @@ async def test_refresh_documents(async_client: httpx.AsyncClient, mock_document_
     )
 
     assert response.status_code == 200
-    assert response.json() == {"status": "OK"}
+    assert response.json() == {"001": {"status": 200, "detail": "OK"}}
     mock_document_service.refresh_documents.assert_awaited_once_with(
         subject_id="subject-id",
         doc_type="001",

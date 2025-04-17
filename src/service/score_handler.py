@@ -63,18 +63,31 @@ async def trigger_score(subject_id: str, correlation_id: str | None = None) -> S
     :param correlation_id: Correlation ID for tracing
     :return: Score summary
     """
-    required_docs = []
+    required_docs = list()
+    periods = dict()
 
     async for doc in cosmos.c_document.query_items(
-        query="SELECT * FROM c WHERE c._type = 'doc' AND c.type.layer = 1",
+        query="SELECT * FROM c "
+              "WHERE c._type = 'doc' "
+              "AND c.type.layer = 1 "
+              "AND c.type.period >= @min_period "
+              "ORDER BY c.period DESC",
+        parameters=[
+            {"name": "@min_period", "value": dt.date(dt.date.today().year - 4, 12, 31)},
+        ],
         partition_key=subject_id,
     ):
         doc = Document(**doc)
-        sheets = await asyncio.gather(*[
+
+        if doc.type.key in periods and (doc.period in periods[doc.type.key] or len(periods[doc.type.key]) == 3):
+            continue
+
+        doc.sheets = await asyncio.gather(*[
             cosmos.c_subject.read_item(item=sheet.id, partition_key=subject_id) for sheet in doc.sheets
         ])
-        doc.sheets = sheets
+
         required_docs.append(doc.model_dump(mode="json", by_alias=True))
+        periods[doc.type.key] = periods.get(doc.type.key, set()) + {doc.period}
 
     result = FullDocument(
         **await http_handler.post_data(
