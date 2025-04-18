@@ -34,15 +34,15 @@ async def get_score_history(
                   f"ORDER BY c.version.created DESC",
             parameters=[
                 {"name": "@subject_id", "value": subject_id},
-                {"name": "@date_from", "value": date_from},
-                {"name": "@date_to", "value": date_to},
+                {"name": "@date_from", "value": date_from.isoformat() if date_from else None},
+                {"name": "@date_to", "value": date_to.isoformat()} if date_to else None,
             ],
             partition_key=subject_id,
         )
     ]
 
     score_sheets = [
-        Sheet(**await cosmos.c_document.read_item(item=doc.parts[0].id, partition_key=subject_id))
+        Sheet(**await cosmos.c_document.read_item(item=doc.sheets[0].id, partition_key=subject_id))
         for doc in score_docs
     ]
 
