@@ -29,11 +29,10 @@ async def get_score_history(
             query=f"SELECT * FROM c "
                   f"WHERE c._type = 'doc' "
                   f"AND c.type.key = 'FC' "
-                  f"{'AND @date_from <= c.version.created' if date_from else ''} "
-                  f"{'AND @date_to >= c.version.created' if date_to else ''} "
+                  f"{'AND @date_from <= c.version.created ' if date_from else ''}"
+                  f"{'AND @date_to >= c.version.created ' if date_to else ''}"
                   f"ORDER BY c.version.created DESC",
             parameters=[
-                {"name": "@subject_id", "value": subject_id},
                 {"name": "@date_from", "value": date_from.isoformat() if date_from else None},
                 {"name": "@date_to", "value": date_to.isoformat()} if date_to else None,
             ],
