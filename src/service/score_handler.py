@@ -87,7 +87,7 @@ async def trigger_score(subject_id: str, correlation_id: str | None = None) -> S
         ])
 
         required_docs.append({**doc.model_dump(mode="json", by_alias=True), "sheets": sheets})
-        periods[doc.type.key] = periods.get(doc.type.key, set()) + {doc.period}
+        periods[doc.type.key] = periods.get(doc.type.key, set()).union({doc.period})
 
     result = FullDocument(
         **await http_handler.post_data(
