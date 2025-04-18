@@ -154,7 +154,7 @@ async def refresh_documents(
                       f"{'AND @period = c.period' if period else ''} ",
                 parameters=[
                     {"name": "@doc_type", "value": doc_type},
-                    {"name": "@period", "value": period},
+                    {"name": "@period", "value": period.isoformat()},
                 ],
                 partition_key=subject_id,
             )
