@@ -34,7 +34,7 @@ async def get_score_history(
                   f"ORDER BY c.version.created DESC",
             parameters=[
                 {"name": "@date_from", "value": date_from.isoformat() if date_from else None},
-                {"name": "@date_to", "value": date_to.isoformat()} if date_to else None,
+                {"name": "@date_to", "value": date_to.isoformat() if date_to else None},
             ],
             partition_key=subject_id,
         )
