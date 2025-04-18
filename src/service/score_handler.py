@@ -70,7 +70,7 @@ async def trigger_score(subject_id: str, correlation_id: str | None = None) -> S
         query="SELECT * FROM c "
               "WHERE c._type = 'doc' "
               "AND c.type.layer = 1 "
-              "AND c.type.period >= @min_period "
+              "AND c.period >= @min_period "
               "ORDER BY c.period DESC",
         parameters=[
             {"name": "@min_period", "value": dt.date(dt.date.today().year - 4, 12, 31).isoformat()},
@@ -82,11 +82,11 @@ async def trigger_score(subject_id: str, correlation_id: str | None = None) -> S
         if doc.type.key in periods and (doc.period in periods[doc.type.key] or len(periods[doc.type.key]) == 3):
             continue
 
-        doc.sheets = await asyncio.gather(*[
-            cosmos.c_subject.read_item(item=sheet.id, partition_key=subject_id) for sheet in doc.sheets
+        sheets = await asyncio.gather(*[
+            cosmos.c_document.read_item(item=sheet.id, partition_key=subject_id) for sheet in doc.sheets
         ])
 
-        required_docs.append(doc.model_dump(mode="json", by_alias=True))
+        required_docs.append({**doc.model_dump(mode="json", by_alias=True), "sheets": sheets})
         periods[doc.type.key] = periods.get(doc.type.key, set()) + {doc.period}
 
     result = FullDocument(
