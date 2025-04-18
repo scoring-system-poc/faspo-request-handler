@@ -148,8 +148,14 @@ async def refresh_documents(
         docs = [
             doc async for doc
             in cosmos.c_document.query_items(
-                query="SELECT * FROM c WHERE c._type = 'doc' AND c.type.key = @doc_type AND c.period = @period",
-                parameters=[{"name": "@doc_type", "value": doc_type}, {"name": "@period", "value": period}],
+                query=f"SELECT * FROM c "
+                      f"WHERE c._type = 'doc' "
+                      f"AND c.type.key = @doc_type "
+                      f"{'AND @period = c.period' if period else ''} ",
+                parameters=[
+                    {"name": "@doc_type", "value": doc_type},
+                    {"name": "@period", "value": period},
+                ],
                 partition_key=subject_id,
             )
         ]
@@ -159,7 +165,8 @@ async def refresh_documents(
 
     refresh_tasks = [
         http_handler.post_data(
-            url=f"{CONFIG.ONLINE_DATA_SERVICE_URL}/mfcr/{doc_type}?subject_id={subject_id}&period={period}",
+            url=f"{CONFIG.ONLINE_DATA_SERVICE_URL}/mfcr/{doc_type}"
+                f"?subject_id={subject_id}{'&period=' + period.isoformat() if period else ''}",
             data={},
             correlation_id=correlation_id,
         )
