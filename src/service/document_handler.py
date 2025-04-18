@@ -142,9 +142,10 @@ async def refresh_documents(
     :param correlation_id: Correlation ID for tracing (optional)
     :return: Dictionary with document types and their statuses or raise HTTPException if no documents to refresh
     """
-    doc_types = [doc_type] if doc_type else ["001", "002", "003", "080"]
+    target_doc_types = [doc_type] if doc_type else ["001", "002", "003", "080"]
+    doc_types = []
 
-    for doc_type in doc_types:
+    for doc_type in target_doc_types:
         docs = [
             doc async for doc
             in cosmos.c_document.query_items(
@@ -160,8 +161,8 @@ async def refresh_documents(
             )
         ]
 
-        if len(docs):
-            doc_types.remove(doc_type)
+        if len(docs) == 0:
+            doc_types.append(doc_type)
 
     refresh_tasks = [
         http_handler.post_data(
