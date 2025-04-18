@@ -73,7 +73,7 @@ async def trigger_score(subject_id: str, correlation_id: str | None = None) -> S
               "AND c.type.period >= @min_period "
               "ORDER BY c.period DESC",
         parameters=[
-            {"name": "@min_period", "value": dt.date(dt.date.today().year - 4, 12, 31)},
+            {"name": "@min_period", "value": dt.date(dt.date.today().year - 4, 12, 31).isoformat()},
         ],
         partition_key=subject_id,
     ):
