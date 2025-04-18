@@ -91,7 +91,7 @@ async def trigger_score(subject_id: str, correlation_id: str | None = None) -> S
 
     result = FullDocument(
         **await http_handler.post_data(
-            url=f"{CONFIG.SCORE_SERVICE_URL}/score",
+            url=f"{CONFIG.MODEL_SERVICE_URL}/score",
             data=required_docs,
             correlation_id=correlation_id,
         )
